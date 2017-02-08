@@ -7,6 +7,7 @@
 #define redScale 10
 #define blueScale 12.75
 #define brightness 200
+#define offset 0.50
 
 uint8_t pixeln = 0;
 
@@ -45,7 +46,7 @@ void loop() {
   delay(100);
   CircuitPlayground.setBrightness(0);
 
-  if( (((x - x_prev) <= 0.50) && ((y - y_prev) <=0.50) && ((z - z_prev) <=0.50))) {
+  if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
     /*Twinkle Twinkle little star...*/
     int led_to_light_1 = random(0, 10);
     //Serial.println(led_to_light);
