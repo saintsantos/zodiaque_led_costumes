@@ -6,28 +6,101 @@
 #define greenScale 0
 #define redScale 10
 #define blueScale 12.75
-#define brightness 200
+
+#define brightness_white 200
+#define delay_white 150
+
+#define brightness_color 200
+#define delay_color 150
+
+/*
+ * Number of times the leds pulse
+ */
+#define pulse_number 2
 #define offset 0.50
 
 uint8_t pixeln = 0;
-
-int redChoice = 0;
-int greenChoice = 0;
-int blueChoice = 0;
 
 float x_prev = 0;
 float y_prev = 0;
 float z_prev = 0;
 
+
+/*
+ * These arrays store the color values that are to be randomly
+ * assigned to the LEDs. This allows for them all to be indexeds individually,
+ * and lit with a different color.
+ */
 int red[10];
 int green[10];
 int blue[10];
 
+/*
+ * This is the function to make an individual LED in a string of LEDs
+ * twinkle. The color is set to a dim white color.
+ */
+void twinkle_twinkle( ){
+  int q = 0;
+  int led_to_light_1 = random(0, 10);
+  //Serial.println(led_to_light);
+  for(int i =0; i < brightness_white; i++) {
+    CircuitPlayground.setBrightness(i);
+    CircuitPlayground.setPixelColor(led_to_light_1, 10, 10, 10);
+    delayMicroseconds(delay_white);
+  }
+
+  for(int i = brightness_white; i > -1; i--) {
+    CircuitPlayground.setBrightness(i);
+    CircuitPlayground.setPixelColor(led_to_light_1, 10, 10, 10);
+    delayMicroseconds(delay_white);
+  }
+}
+
+
+/*
+ * This function will pulse each LED a different color with a breathing effect.
+ */
+void pulse() {
+  int q = 0;
+  for (; q <pulse_number; q++) {
+    int r = 0;
+  for(; r < 10; r++) {
+    red[r] = random(0, 20);
+    green[r] = random(0, 20);
+    blue[r] = random(0, 20);
+  }
+
+  /*
+   * Increase brightness to the value defined by brightness_color
+   */
+  for (int j=0; j<brightness_color; j++) {
+    CircuitPlayground.setBrightness(j);
+    for(int i=0; i<10;i++) {
+      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);
+      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);  
+      }
+      delayMicroseconds(delay_color);
+    }
+
+    /*
+     * Decrease brightness to zero
+     */
+    for (int j=brightness_color; j>0; j--) {
+     CircuitPlayground.setBrightness(j);
+     for(int i=0; i<10;i++) {
+      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
+      }
+      delayMicroseconds(delay_color);
+    }
+  }
+}
+
 
 void setup() {
-  // put your setup code here, to run once:
- // while (!Serial);
-  
+
+  /*
+   * Initialize Serial, CircuitPlayground, and accelerometer
+   */
   Serial.begin(9600);
   CircuitPlayground.begin();
   CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
@@ -40,77 +113,15 @@ void loop() {
   float x = CircuitPlayground.motionX();
   float y = CircuitPlayground.motionY();
   float z = CircuitPlayground.motionZ();
-  redChoice = random(0, 10);
-  blueChoice = random(0, 10);
-  greenChoice = random(0, 10);
-
-  int j = 0;
-  for(; j < 10; j++) {
-    red[j] = random(0, 256);
-    green[j] = random(0, 256);
-    blue[j] = random(0, 256);
-  }
- 
-
   
-
-  delay(100);
   CircuitPlayground.setBrightness(0);
 
   if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
-    /*Twinkle Twinkle little star...*/
-    int led_to_light_1 = random(0, 10);
-    //Serial.println(led_to_light);
-    for(int i =0; i < brightness; i++) {
-      CircuitPlayground.setBrightness(i);
-      CircuitPlayground.setPixelColor(led_to_light_1, 0, 0, 0);
-      delayMicroseconds(150);
-    }
-
-    for(int i = brightness; i > -1; i--) {
-      CircuitPlayground.setBrightness(i);
-      CircuitPlayground.setPixelColor(led_to_light_1, 0, 0, 0);
-      delayMicroseconds(150);
-    }
-    
+    twinkle_twinkle();
   } else {
-    for (int j=0; j<brightness; j++) {
-      CircuitPlayground.setBrightness(j);
-     for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
-      }
-      delayMicroseconds(150);
-    }
-
-    for (int j=brightness; j>0; j--) {
-      CircuitPlayground.setBrightness(j);
-     for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
-      }
-      delayMicroseconds(150);
-    }
+    pulse();
   }
   
-  
-
- /*  CircuitPlayground.setPixelColor(pixeln++, CircuitPlayground.colorWheel(25 * pixeln));
-  if (pixeln == 11) {
-    pixeln = 0;
-    
-  }*/
-
- /* Serial.print("X Axis: "); Serial.print(x);
-  Serial.print(" Y Axis: "); Serial.print(y);
-  Serial.print(" Z Axis: "); Serial.print(z);
-  Serial.println("m/s^2");
-  Serial.print("Red: "); Serial.print(red);
-  Serial.print("Blue: "); Serial.print(blue);
-  Serial.print("Green: "); Serial.print(green);
-  Serial.println("");*/
-  Serial.print("X Diff: "); Serial.print(x - x_prev);
-  Serial.print(" Y Diff: "); Serial.print(y - y_prev);
-  Serial.print(" Z Diff: "); Serial.print(z - z_prev);
-  Serial.println("m/s^2");
   x_prev = x;
   y_prev = y;
   z_prev = z;
