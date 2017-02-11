@@ -11,13 +11,17 @@
 
 uint8_t pixeln = 0;
 
-int red = 0;
-int green = 0;
-int blue = 0;
+int redChoice = 0;
+int greenChoice = 0;
+int blueChoice = 0;
 
 float x_prev = 0;
 float y_prev = 0;
 float z_prev = 0;
+
+int red[10];
+int green[10];
+int blue[10];
 
 
 void setup() {
@@ -36,9 +40,16 @@ void loop() {
   float x = CircuitPlayground.motionX();
   float y = CircuitPlayground.motionY();
   float z = CircuitPlayground.motionZ();
-  red = redScale*z;
-  blue = blueScale*y;
-  green = greenScale*x;
+  redChoice = random(0, 10);
+  blueChoice = random(0, 10);
+  greenChoice = random(0, 10);
+
+  int j = 0;
+  for(; j < 10; j++) {
+    red[j] = random(0, 256);
+    green[j] = random(0, 256);
+    blue[j] = random(0, 256);
+  }
  
 
   
@@ -52,13 +63,13 @@ void loop() {
     //Serial.println(led_to_light);
     for(int i =0; i < brightness; i++) {
       CircuitPlayground.setBrightness(i);
-      CircuitPlayground.setPixelColor(led_to_light_1, red, green, blue);
+      CircuitPlayground.setPixelColor(led_to_light_1, 0, 0, 0);
       delayMicroseconds(150);
     }
 
     for(int i = brightness; i > -1; i--) {
       CircuitPlayground.setBrightness(i);
-      CircuitPlayground.setPixelColor(led_to_light_1, red, green, blue);
+      CircuitPlayground.setPixelColor(led_to_light_1, 0, 0, 0);
       delayMicroseconds(150);
     }
     
@@ -66,7 +77,7 @@ void loop() {
     for (int j=0; j<brightness; j++) {
       CircuitPlayground.setBrightness(j);
      for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red, green, blue);  
+      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
       }
       delayMicroseconds(150);
     }
@@ -74,7 +85,7 @@ void loop() {
     for (int j=brightness; j>0; j--) {
       CircuitPlayground.setBrightness(j);
      for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red, green, blue);  
+      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
       }
       delayMicroseconds(150);
     }
