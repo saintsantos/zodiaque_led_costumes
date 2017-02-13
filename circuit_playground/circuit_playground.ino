@@ -1,18 +1,16 @@
-//#include <Adafruit_CircuitPlayground.h>
+#include <Adafruit_CircuitPlayground.h>
 #include <Adafruit_NeoPixel.h>
-#include <Wire.h>
-#include <SPI.h>
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
-#define greenScale 0
-#define redScale 10
-#define blueScale 12.75
+/*
+ * Still playing with. Will update with better comment
+ */
 
 #define brightness_white 200
 #define delay_white 150
 
+/*
+ * Still playing with. Will update with better comment
+ */
 #define brightness_color 200
 #define delay_color 150
 
@@ -20,13 +18,28 @@
  * Number of times the leds pulse
  */
 #define pulse_number 1
+
+/*
+ * Stores how much movement is required to switch motion.
+ */
 #define offset 0.50
 
+/*
+ * Number of pixels on the current String
+ */
 #define numpixels 2
+
+/*
+ * Data pin the pixels are connected to.
+ */
 #define pixelpin 6
 
 uint8_t pixeln = 0;
 
+/*
+ * These variables store the previous values form the accelerometers, 
+ * which alows us to detect whether the dancer is moving or not.
+ */
 float x_prev = 0;
 float y_prev = 0;
 float z_prev = 0;
@@ -36,10 +49,13 @@ float z_prev = 0;
  * These arrays store the color values that are to be randomly
  * assigned to the LEDs. This allows for them all to be indexeds individually,
  * and lit with a different color.
+ * The size of the array is directly related to the number of pixels + 1
  */
-int red[10];
-int green[10];
-int blue[10];
+int red[numpixels];
+int green[numpixels];
+int blue[numpixels];
+
+int pulseStyle = 1; //1 for white pulsing, 2 for color pulsing
 
 /*
  * This is for defining the neopixels
@@ -47,34 +63,30 @@ int blue[10];
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, 6, NEO_GRB + NEO_KHZ800);
 
 /*
- * This is the function to make an individual LED in a string of LEDs
- * twinkle. The color is set to a dim white color.
+ * This is the function to make a randomly selected led on a string to
+ * blink. This creates a twinkling effect. 
  */
 void twinkle_twinkle( ){
   int q = 0;
   int led_to_light_1 = random(0, (numpixels +1));
+  
   for (int j=0; j < numpixels; j++) {
        pixels.setPixelColor(j, 0, 0, 0);
       }
   pixels.show();
-  //Serial.println(led_to_light);
+  
   for(int i =0; i < 255; i++) {
-    //CircuitPlayground.setBrightness(i);
-    //CircuitPlayground.setPixelColor(led_to_light_1, 10, 10, 10);
     pixels.setPixelColor(led_to_light_1, i, i, i);
-    //pixels.setPixelColor(led_to_light_1, i + 12, i + 12, i + 12);
     delayMicroseconds(delay_white);
     pixels.show();
   }
 
   for(int i = 255; i > -1; i--) {
-    //CircuitPlayground.setBrightness(i);
-    //CircuitPlayground.setPixelColor(led_to_light_1, 10, 10, 10);
     pixels.setPixelColor(led_to_light_1, i, i, i);
-    //pixels.setPixelColor(led_to_light_1, i + 12, i + 12, i + 12);
     delayMicroseconds(delay_white);
     pixels.show();
   }
+  
 }
 
 
@@ -85,75 +97,55 @@ void pulse() {
   int q = 0;
   for (; q <pulse_number; q++) {
     int r = 0;
-  for(; r < 10; r++) {
-    red[r] = random(0, 20);
-    green[r] = random(0, 20);
-    blue[r] = random(0, 20);
+  for(; r < numpixels; r++) {
+    red[r] = random(0, 150);
+    green[r] = 0;
+    blue[r] = random(0, 150);
   }
-
-  /*
-   * Increase brightness to the value defined by brightness_color
-   */
-  /*for (int j=0; j<brightness_color; j++) {
-    CircuitPlayground.setBrightness(j);
-    for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);
-      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);
-      }
-      delayMicroseconds(delay_color);
-    }*/
-
+     
     /*
-     * Decrease brightness to zero
+     * When the toggle is set to only choose white LEDs, the values default to only pulsing white LEDs.
+     * When the toggle is set to color, the pixels will choose the color defined in the color array to choose
+     * one of the subset colors we have chosen for this input. Each color is randomly generated on each
+     * run of the code.
      */
-    /*for (int j=brightness_color; j>0; j--) {
-     CircuitPlayground.setBrightness(j);
-     for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);
-      }
-      delayMicroseconds(delay_color);
-    }*/
-     /**
-      * This is for specifically white LEDs.
-      */
-    /*for ( int i=0; i < 255; i++) {
-      for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, i, i, i);
-      }
-      pixels.show();
-      delay(5);
-    }
+     switch(pulseStyle) {
+      case 1:
+        for ( int i=0; i < brightness_white; i++) {
+          for (int j=0; j < numpixels; j++) {
+            pixels.setPixelColor(j, i, i, i);
+          }
+          pixels.show();
+          delay(5);
+        }
 
-    for ( int i=255; i > 0; i--) {
-      for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, i, i, i);
-      }
-      pixels.show();
-      delay(5);
-    }*/
-
-    for (int j=0; j<brightness_color; j++) {
+        for ( int i=brightness_white; i > 0; i--) {
+          for (int j=0; j < numpixels; j++) {
+            pixels.setPixelColor(j, i, i, i);
+          }
+        pixels.show();
+        delay(5);
+        }
+      case 2:
+        for (int j=0; j<brightness_color; j++) {
+          for(int i=0; i<numpixels;i++) {
+            pixels.setPixelColor(i, red[i], green[i], blue[i]);
+          }
+        pixels.setBrightness(j);
+        pixels.show();
+        delay(5);
+        }
+        
+        for (int j=brightness_color; j>0; j--) {
+          for(int i=0; i<numpixels;i++) {
+            pixels.setPixelColor(i, red[i], green[i], blue[i]);
+          }
+        pixels.setBrightness(j);
+        pixels.show();
+        delay(5);
+        }
+     }
     
-    //for(int i=0; i<10;i++) {
-      pixels.setPixelColor(0, red[0], green[0], blue[0]);
-      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);
-      //}
-      pixels.setBrightness(j);
-      pixels.show();
-      delay(5);
-    }
-
-    /*
-     * Decrease brightness to zero
-     */
-    for (int j=brightness_color; j>0; j--) {
-     //for(int i=0; i<10;i++) {
-      pixels.setPixelColor(0, red[0], green[0], blue[0]);
-      //}
-      pixels.setBrightness(j);
-      pixels.show();
-      delay(5);
-    }
 
   }
 }
@@ -162,11 +154,11 @@ void pulse() {
 void setup() {
 
   /*
-   * Initialize Serial, CircuitPlayground, and accelerometer
+   * Initialize Serial, CircuitPlayground, accelerometer, and our pixel strip.
    */
- // Serial.begin(9600);
-  /*CircuitPlayground.begin();
-  CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!*/
+ // Serial.begin(9600); // Debugging serial, leave commented unless debugging accelerometer
+  CircuitPlayground.begin(); //Make sure this is before the pixels.begin() call or the leds will not start properly.
+  CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
   pixels.begin();
   pixels.show();
 
@@ -174,26 +166,26 @@ void setup() {
 
 void loop() {
   //CircuitPlayground.clearPixels();
-  /*float x = CircuitPlayground.motionX();
+  float x = CircuitPlayground.motionX();
   float y = CircuitPlayground.motionY();
-  float z = CircuitPlayground.motionZ();*/
+  float z = CircuitPlayground.motionZ();
+  
 
-  //CircuitPlayground.setBrightness(0);
-
-  /*if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
+  /*
+   * This is a conditional that will check to see whether the dancer is moving or completely still before choosing what flashing style to use. Twinkle or pulse.
+   * The offset variable is at the top of the file and can be tweaked as needed.
+   * The higher the value, the more motion required in order to make the lights switch to pulse.
+   */
+  if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
     twinkle_twinkle();
   } else {
     pulse();
   }
-  //twinkle_twinkle();
   
 
   x_prev = x;
   y_prev = y;
-  z_prev = z;*/
-  //pixels.setPixelColor(0, 5, 5, 5);
-  //pixels.show();
-  pulse();
+  z_prev = z;
 
 
   delay(5);
