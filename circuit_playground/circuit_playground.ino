@@ -133,23 +133,26 @@ void pulse() {
     }*/
 
     for (int j=0; j<brightness_color; j++) {
-    pixels.setBrightness(j);
-    for(int i=0; i<10;i++) {
-      pixels.setPixelColor(i, red[i], green[i], blue[i]);
+    
+    //for(int i=0; i<10;i++) {
+      pixels.setPixelColor(0, red[0], green[0], blue[0]);
       //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);
-      }
-      delayMicroseconds(delay_color);
+      //}
+      pixels.setBrightness(j);
+      pixels.show();
+      delay(5);
     }
 
     /*
      * Decrease brightness to zero
      */
     for (int j=brightness_color; j>0; j--) {
-     pixels.setBrightness(j);
-     for(int i=0; i<10;i++) {
-      pixels.setPixelColor(i, red[i], green[i], blue[i]);
-      }
-      delayMicroseconds(delay_color);
+     //for(int i=0; i<10;i++) {
+      pixels.setPixelColor(0, red[0], green[0], blue[0]);
+      //}
+      pixels.setBrightness(j);
+      pixels.show();
+      delay(5);
     }
 
   }
@@ -188,9 +191,9 @@ void loop() {
   x_prev = x;
   y_prev = y;
   z_prev = z;*/
-  pixels.setPixelColor(0, 120, 120, 120);
-  pixels.show();
-  //pulse();
+  //pixels.setPixelColor(0, 5, 5, 5);
+  //pixels.show();
+  pulse();
 
 
   delay(5);
