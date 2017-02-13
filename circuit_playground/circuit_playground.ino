@@ -1,4 +1,4 @@
-#include <Adafruit_CircuitPlayground.h>
+//#include <Adafruit_CircuitPlayground.h>
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include <SPI.h>
@@ -22,7 +22,7 @@
 #define pulse_number 1
 #define offset 0.50
 
-#define numpixels 12
+#define numpixels 2
 #define pixelpin 6
 
 uint8_t pixeln = 0;
@@ -54,7 +54,7 @@ void twinkle_twinkle( ){
   int q = 0;
   int led_to_light_1 = random(0, (numpixels +1));
   for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, 0, 0, 0); 
+       pixels.setPixelColor(j, 0, 0, 0);
       }
   pixels.show();
   //Serial.println(led_to_light);
@@ -98,7 +98,7 @@ void pulse() {
     CircuitPlayground.setBrightness(j);
     for(int i=0; i<10;i++) {
       CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);
-      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);  
+      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);
       }
       delayMicroseconds(delay_color);
     }*/
@@ -109,14 +109,16 @@ void pulse() {
     /*for (int j=brightness_color; j>0; j--) {
      CircuitPlayground.setBrightness(j);
      for(int i=0; i<10;i++) {
-      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);  
+      CircuitPlayground.setPixelColor(i, red[i], green[i], blue[i]);
       }
       delayMicroseconds(delay_color);
     }*/
-
-    for ( int i=0; i < 255; i++) {
+     /**
+      * This is for specifically white LEDs.
+      */
+    /*for ( int i=0; i < 255; i++) {
       for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, i, i, i); 
+       pixels.setPixelColor(j, i, i, i);
       }
       pixels.show();
       delay(5);
@@ -124,12 +126,32 @@ void pulse() {
 
     for ( int i=255; i > 0; i--) {
       for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, i, i, i); 
+       pixels.setPixelColor(j, i, i, i);
       }
       pixels.show();
       delay(5);
+    }*/
+
+    for (int j=0; j<brightness_color; j++) {
+    pixels.setBrightness(j);
+    for(int i=0; i<10;i++) {
+      pixels.setPixelColor(i, red[i], green[i], blue[i]);
+      //CircuitPlayground.setPixelColor(i + 1, red[i], green[i], blue[i]);
+      }
+      delayMicroseconds(delay_color);
     }
-    
+
+    /*
+     * Decrease brightness to zero
+     */
+    for (int j=brightness_color; j>0; j--) {
+     pixels.setBrightness(j);
+     for(int i=0; i<10;i++) {
+      pixels.setPixelColor(i, red[i], green[i], blue[i]);
+      }
+      delayMicroseconds(delay_color);
+    }
+
   }
 }
 
@@ -140,32 +162,36 @@ void setup() {
    * Initialize Serial, CircuitPlayground, and accelerometer
    */
  // Serial.begin(9600);
-  CircuitPlayground.begin();
-  CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
-  pixels.begin();  
+  /*CircuitPlayground.begin();
+  CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!*/
+  pixels.begin();
   pixels.show();
 
 }
 
 void loop() {
   //CircuitPlayground.clearPixels();
-  float x = CircuitPlayground.motionX();
+  /*float x = CircuitPlayground.motionX();
   float y = CircuitPlayground.motionY();
-  float z = CircuitPlayground.motionZ();
-  
+  float z = CircuitPlayground.motionZ();*/
+
   //CircuitPlayground.setBrightness(0);
 
-  if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
+  /*if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
     twinkle_twinkle();
   } else {
     pulse();
   }
   //twinkle_twinkle();
   
+
   x_prev = x;
   y_prev = y;
-  z_prev = z;
-  
-  
+  z_prev = z;*/
+  pixels.setPixelColor(0, 120, 120, 120);
+  pixels.show();
+  //pulse();
+
+
   delay(5);
 }
