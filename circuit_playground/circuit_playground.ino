@@ -22,19 +22,17 @@
 /*
  * Stores how much movement is required to switch motion.
  */
-#define offset 0.50
+#define offset 0.80
 
 /*
  * Number of pixels on the current String
  */
-#define numpixels 2
+#define numpixels 12
 
 /*
  * Data pin the pixels are connected to.
  */
 #define pixelpin 6
-
-uint8_t pixeln = 0;
 
 /*
  * These variables store the previous values form the accelerometers, 
@@ -55,12 +53,16 @@ int red[numpixels];
 int green[numpixels];
 int blue[numpixels];
 
-int pulseStyle = 1; //1 for white pulsing, 2 for color pulsing
+/*
+ * 1 = pulse white
+ * 2 = pulse color
+ */
+int pulseStyle = 1;
 
 /*
- * This is for defining the neopixels
+ * This is for defining the neopixels. DO NOT TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING!
  */
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, 6, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numpixels, pixelpin, NEO_GRB + NEO_KHZ800);
 
 /*
  * This is the function to make a randomly selected led on a string to
@@ -70,21 +72,18 @@ void twinkle_twinkle( ){
   int q = 0;
   int led_to_light_1 = random(0, (numpixels +1));
   
-  for (int j=0; j < numpixels; j++) {
-       pixels.setPixelColor(j, 0, 0, 0);
-      }
-  pixels.show();
-  
   for(int i =0; i < 255; i++) {
-    pixels.setPixelColor(led_to_light_1, i, i, i);
-    delayMicroseconds(delay_white);
+    pixels.setPixelColor(led_to_light_1, 255, 255, 255);
+    pixels.setBrightness(i);
     pixels.show();
+    delayMicroseconds(delay_white);
   }
 
   for(int i = 255; i > -1; i--) {
-    pixels.setPixelColor(led_to_light_1, i, i, i);
-    delayMicroseconds(delay_white);
+    pixels.setPixelColor(led_to_light_1, 255, 255, 255);
+    pixels.setBrightness(i);
     pixels.show();
+    delayMicroseconds(delay_white);
   }
   
 }
@@ -98,9 +97,9 @@ void pulse() {
   for (; q <pulse_number; q++) {
     int r = 0;
   for(; r < numpixels; r++) {
-    red[r] = random(0, 150);
+    red[r] = random(0, 255);
     green[r] = 0;
-    blue[r] = random(0, 150);
+    blue[r] = random(0, 255);
   }
      
     /*
@@ -109,24 +108,6 @@ void pulse() {
      * one of the subset colors we have chosen for this input. Each color is randomly generated on each
      * run of the code.
      */
-     switch(pulseStyle) {
-      case 1:
-        for ( int i=0; i < brightness_white; i++) {
-          for (int j=0; j < numpixels; j++) {
-            pixels.setPixelColor(j, i, i, i);
-          }
-          pixels.show();
-          delay(5);
-        }
-
-        for ( int i=brightness_white; i > 0; i--) {
-          for (int j=0; j < numpixels; j++) {
-            pixels.setPixelColor(j, i, i, i);
-          }
-        pixels.show();
-        delay(5);
-        }
-      case 2:
         for (int j=0; j<brightness_color; j++) {
           for(int i=0; i<numpixels;i++) {
             pixels.setPixelColor(i, red[i], green[i], blue[i]);
@@ -136,7 +117,7 @@ void pulse() {
         delay(5);
         }
         
-        for (int j=brightness_color; j>0; j--) {
+        for (int j=brightness_color; j>-1; j--) {
           for(int i=0; i<numpixels;i++) {
             pixels.setPixelColor(i, red[i], green[i], blue[i]);
           }
@@ -144,9 +125,6 @@ void pulse() {
         pixels.show();
         delay(5);
         }
-     }
-    
-
   }
 }
 
@@ -156,7 +134,7 @@ void setup() {
   /*
    * Initialize Serial, CircuitPlayground, accelerometer, and our pixel strip.
    */
- // Serial.begin(9600); // Debugging serial, leave commented unless debugging accelerometer
+  Serial.begin(9600); // Debugging serial, leave commented unless debugging accelerometer
   CircuitPlayground.begin(); //Make sure this is before the pixels.begin() call or the leds will not start properly.
   CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
   pixels.begin();
@@ -179,7 +157,7 @@ void loop() {
   if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
     twinkle_twinkle();
   } else {
-    pulse();
+    pulse();    
   }
   
 
