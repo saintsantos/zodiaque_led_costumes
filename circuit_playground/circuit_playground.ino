@@ -59,6 +59,8 @@ int blue[numpixels];
  */
 int pulseStyle = 1;
 
+bool state;
+
 /*
  * This is for defining the neopixels. DO NOT TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING!
  */
@@ -94,7 +96,7 @@ void twinkle_twinkle( ){
  */
 void pulse() {
   int q = 0;
-  for (; q <pulse_number; q++) {
+  //for (; q < pulse_number; q++) {
     int r = 0;
   for(; r < numpixels; r++) {
     red[r] = random(0, 255);
@@ -110,7 +112,13 @@ void pulse() {
      */
         for (int j=0; j<brightness_color; j++) {
           for(int i=0; i<numpixels;i++) {
-            pixels.setPixelColor(i, red[i], green[i], blue[i]);
+            if (state == true) {
+             pixels.setPixelColor(i, red[i], green[i], blue[i]);
+             state = !state; 
+            } else {
+              pixels.setPixelColor(i, 0, 0, 0);
+              state = !state;
+            }
           }
         pixels.setBrightness(j);
         pixels.show();
@@ -119,13 +127,20 @@ void pulse() {
         
         for (int j=brightness_color; j>-1; j--) {
           for(int i=0; i<numpixels;i++) {
-            pixels.setPixelColor(i, red[i], green[i], blue[i]);
+            if (state == true) {
+             pixels.setPixelColor(i, red[i], green[i], blue[i]); 
+             state = !state;
+            } else {
+              pixels.setPixelColor(i, 0, 0, 0);
+              state = !state;
+            }
           }
         pixels.setBrightness(j);
         pixels.show();
         delay(5);
         }
-  }
+       state = !state;
+       //}
 }
 
 
