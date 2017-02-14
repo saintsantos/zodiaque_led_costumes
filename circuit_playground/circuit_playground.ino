@@ -5,13 +5,13 @@
  * Still playing with. Will update with better comment
  */
 
-#define brightness_white 200
+#define brightness_white 255
 #define delay_white 150
 
 /*
  * Still playing with. Will update with better comment
  */
-#define brightness_color 200
+#define brightness_color 255
 #define delay_color 150
 
 /*
@@ -27,7 +27,7 @@
 /*
  * Number of pixels on the current String
  */
-#define numpixels 12
+#define numpixels 8
 
 /*
  * Data pin the pixels are connected to.
@@ -59,6 +59,10 @@ int blue[numpixels];
  */
 int pulseStyle = 1;
 
+int colorDelayRatio = 1000;
+
+int delayval;
+
 bool state;
 
 /*
@@ -74,14 +78,14 @@ void twinkle_twinkle( ){
   int q = 0;
   int led_to_light_1 = random(0, (numpixels +1));
   
-  for(int i =0; i < 255; i++) {
-    pixels.setPixelColor(led_to_light_1, 255, 255, 255);
+  for(int i =0; i < brightness_white; i++) {
+    pixels.setPixelColor(led_to_light_1, 1, 1, 1);
     pixels.setBrightness(i);
     pixels.show();
     delayMicroseconds(delay_white);
   }
 
-  for(int i = 255; i > -1; i--) {
+  for(int i = brightness_white; i > -1; i--) {
     pixels.setPixelColor(led_to_light_1, 255, 255, 255);
     pixels.setBrightness(i);
     pixels.show();
@@ -99,9 +103,9 @@ void pulse() {
   //for (; q < pulse_number; q++) {
     int r = 0;
   for(; r < numpixels; r++) {
-    red[r] = random(0, 255);
+    red[r] = random(0, 10);
     green[r] = 0;
-    blue[r] = random(0, 255);
+    blue[r] = random(0, 10);
   }
      
     /*
@@ -122,7 +126,7 @@ void pulse() {
           }
         pixels.setBrightness(j);
         pixels.show();
-        delay(5);
+        delayMicroseconds(delayval);
         }
         
         for (int j=brightness_color; j>-1; j--) {
@@ -137,7 +141,7 @@ void pulse() {
           }
         pixels.setBrightness(j);
         pixels.show();
-        delay(5);
+        delayMicroseconds(delayval);
         }
        state = !state;
        //}
@@ -149,7 +153,7 @@ void setup() {
   /*
    * Initialize Serial, CircuitPlayground, accelerometer, and our pixel strip.
    */
-  Serial.begin(9600); // Debugging serial, leave commented unless debugging accelerometer
+  //Serial.begin(9600); // Debugging serial, leave commented unless debugging accelerometer
   CircuitPlayground.begin(); //Make sure this is before the pixels.begin() call or the leds will not start properly.
   CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
   pixels.begin();
@@ -162,6 +166,20 @@ void loop() {
   float x = CircuitPlayground.motionX();
   float y = CircuitPlayground.motionY();
   float z = CircuitPlayground.motionZ();
+  if(x < 0) {
+    x = x * (-1);
+  }
+
+  if(y < 0) {
+    y = y * (-1);
+  }
+
+  if (z < 0) {
+    z = z * (-1);
+  }
+
+  int average = (x + y + z) / 3;
+  delayval = colorDelayRatio * average;
   
 
   /*
@@ -174,6 +192,12 @@ void loop() {
   } else {
     pulse();    
   }
+
+  Serial.print("X: "); Serial.print(x);
+  Serial.print(" Y: "); Serial.print(y);
+  Serial.print(" Z: "); Serial.print(z);
+  Serial.print("Average: "); Serial.print(average);
+  Serial.println("m/s^2");
   
 
   x_prev = x;
@@ -181,5 +205,5 @@ void loop() {
   z_prev = z;
 
 
-  delay(5);
+  delay(300);
 }
