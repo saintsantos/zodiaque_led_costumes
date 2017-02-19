@@ -5,7 +5,7 @@
  * Still playing with. Will update with better comment
  */
 
-#define brightness_white 255
+#define brightness_white 255 
 #define delay_white 150
 
 /*
@@ -27,7 +27,7 @@
 /*
  * Number of pixels on the current String
  */
-#define numpixels 12
+#define numpixels 8
 
 /*
  * Data pin the pixels are connected to.
@@ -41,6 +41,7 @@
 float x_prev = 0;
 float y_prev = 0;
 float z_prev = 0;
+int avg_offset = 0;
 
 
 /*
@@ -52,6 +53,18 @@ float z_prev = 0;
 int red[numpixels];
 int green[numpixels];
 int blue[numpixels];
+
+/**
+ * This array is the modified array. All of our changes to brightness go here
+ */
+int modred[numpixels];
+int modgreen[numpixels];
+int modblue[numpixels];
+
+/**
+ * This array will store whether an LED is on or not.
+ */
+int ledstate[numpixels];
 
 /*
  * 1 = pulse white
@@ -83,72 +96,111 @@ void twinkle_twinkle( ){
   int led_to_light_1 = random(0, (numpixels +1));
   
   for(int i =0; i < brightness_white; i++) {
-    pixels.setPixelColor(led_to_light_1, 1, 1, 1);
-    pixels.setBrightness(i);
+    pixels.setPixelColor(led_to_light_1, i, i, i);
     pixels.show();
     delayMicroseconds(delay_white);
   }
 
   for(int i = brightness_white; i > -1; i--) {
-    pixels.setPixelColor(led_to_light_1, 255, 255, 255);
-    pixels.setBrightness(i);
+    pixels.setPixelColor(led_to_light_1, i, i, i);
     pixels.show();
     delayMicroseconds(delay_white);
   }
   
 }
 
+bool checkOff() {
+  for (int i=0; i < numpixels; i++) {
+      /*Serial.print("modred: "); Serial.print(modred[i]); Serial.println("");
+      Serial.print("modblue: "); Serial.print(modblue[i]); Serial.println("");
+      Serial.print("red: "); Serial.print(red[i]); Serial.println("");
+      Serial.print("blue: "); Serial.print(blue[i]); Serial.println("");
+      delay(1000);*/
+    if (modred[i] != 0 || modblue[i] != 0) {
+      Serial.println("False!");
+      return false; 
+    }
+  }
+
+  return true;
+  
+}
+
+bool checkOn() {
+  for (int i=0; i < numpixels; i++) {
+    if(modred[i] != red[i] || modblue[i] != blue[i]) {
+      return false;
+    }
+  }
+
+  return true;
+  
+}
 
 /*
- * This function will pulse each LED a different color with a breathing effect.
+ * This initializes the LEDs to their initial color. Used for debugging
  */
-void pulse() {
-  int q = 0;
-  //for (; q < pulse_number; q++) {
-  int r = 0;
-  for(; r < numpixels; r++) {
-    red[r] = random(0, 10);
-    green[r] = 0;
-    blue[r] = random(0, 10);
+void turnOn() {
+  for(int i = 0; i < numpixels; i++) {
+    pixels.setPixelColor(i, red[i], green[i], blue[i]);
   }
-     
-    /*
-     * When the toggle is set to only choose white LEDs, the values default to only pulsing white LEDs.
-     * When the toggle is set to color, the pixels will choose the color defined in the color array to choose
-     * one of the subset colors we have chosen for this input. Each color is randomly generated on each
-     * run of the code.
-     */
-        for (int j=0; j<brightness_color; j++) {
-          for(int i=0; i<numpixels;i++) {
-            if (state == true) {
-             pixels.setPixelColor(i, red[i], green[i], blue[i]);
-             state = !state; 
-            } else {
-              pixels.setPixelColor(i, 0, 0, 0);
-              state = !state;
-            }
-          }
-        pixels.setBrightness(j);
-        pixels.show();
-        delayMicroseconds(delayval);
-        }
-        
-        for (int j=brightness_color; j>-1; j--) {
-          for(int i=0; i<numpixels;i++) {
-            if (state == true) {
-             pixels.setPixelColor(i, red[i], green[i], blue[i]); 
-             state = !state;
-            } else {
-              pixels.setPixelColor(i, 0, 0, 0);
-              state = !state;
-            }
-          }
-        pixels.setBrightness(j);
-        pixels.show();
-        delayMicroseconds(delayval);
-        }
-       state = !state;
-       //}
+  pixels.show();
+}
+
+void fadeOut() {
+  int j = 0;
+  bool off = checkOff();
+  while(!off) {
+    Serial.print("off: "); Serial.print(off);Serial.println("");
+    for(int i = 0; i < numpixels; i++) {
+      if(modred[i] > 0) {
+        modred[i]--;
+      } 
+
+      if (modblue[i] > 0) {
+        modblue[i]--;
+      }
+      Serial.print("modred: "); Serial.print(modred[i]); Serial.println("");
+      Serial.print("modblue: "); Serial.print(modblue[i]); Serial.println("");
+      Serial.print("red: "); Serial.print(red[i]); Serial.println("");
+      Serial.print("blue: "); Serial.print(blue[i]); Serial.println("");
+      delay(2000);
+      pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
+    }
+    pixels.show();
+    delay(75);
+    j++;
+    off = checkOff();
+  }
+  Serial.println("Leaving!");
+  delay(5000);
+}
+
+void fadeIn() {
+  int j = 0;
+  bool on = checkOn();
+  while(!on) {
+    //Serial.print("on: "); Serial.print(on);Serial.println("");
+    for(int i = 0; i < numpixels; i++) {
+      if(modred[i] < red[i]) {
+        modred[i]++;
+      } 
+
+      if (modblue[i] < blue[i]) {
+        modblue[i]++;
+      }
+      /*Serial.print("modred: "); Serial.print(modred[i]); Serial.println("");
+      Serial.print("modblue: "); Serial.print(modblue[i]); Serial.println("");
+      Serial.print("red: "); Serial.print(red[i]); Serial.println("");
+      Serial.print("blue: "); Serial.print(blue[i]); Serial.println("");
+      delay(1000);*/
+      pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
+    }
+    pixels.show();
+    delay(75);
+    j++;
+    on = checkOn();
+  }
 }
 
 void changeColor() {
@@ -158,35 +210,22 @@ void changeColor() {
     green[r] = 0;
     blue[r] = random(10, 255);
   }
-  switch(color) {
-    case 0:
-      color = 1;
-      for(int i =0; i < numpixels; i++) {
-        pixels.setPixelColor(i, red[i], green[i], blue[i]);
-        pixels.show();
-      }
-      break;
-    case 1:
-      color = 2;
-      for(int i =0; i < numpixels; i++) {
-        pixels.setPixelColor(i, red[i], green[i], blue[i]);
-        pixels.show();
-      }
-      break;
-    case 2:
-      color = 0;
-      for(int i =0; i < numpixels; i++) {
-        pixels.setPixelColor(i, red[i], green[i], blue[i]);
-        pixels.show();
-      }
-      break;
+  r = 0;
+  for(; r < numpixels; r++) {
+    modred[r] = red[r];
+    modgreen[r] = 0;
+    modblue[r] = blue[r];
   }
 
+  for(int i =0; i < numpixels; i++) {
+    pixels.setPixelColor(i, red[i], green[i], blue[i]);
+    pixels.show();
+  }
   pixels.show();
 }
 
 void modBright(int average) {
-  uint8_t brightness = average * 10;
+  uint8_t brightness = average * 5;
   int difference = brightness - storeBrightness;
   Serial.print("Difference: "); Serial.print(difference); Serial.println("");
   if (difference > 15 || difference < -15) {
@@ -194,10 +233,20 @@ void modBright(int average) {
       Serial.println("Negative!");
       for (int j=storeBrightness; j > brightness; j--) {
         Serial.print("J: "); Serial.print(j); Serial.println("");
-        if(j > 0) {
-          pixels.setBrightness(j);
+        for(int i = 0; i < numpixels; i++) {
+          if (modred[i] != 0 && modblue[i] != 0) {
+            Serial.println("Not Dim Enough");
+            modred[i] = modred[i] - 1;
+            modblue[i] = modblue - 1;
+          } else if(modred[i] == 0) {
+            modred[i] = modred[i] + 1;
+          } else {
+            modblue[i] = modblue + 1;
+          }
+
+          pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
         }
-        delayMicroseconds(750);
+        delay(5);
         pixels.show();
       
       }
@@ -205,10 +254,20 @@ void modBright(int average) {
       Serial.println("Positive!");
       for (int j=storeBrightness; j<=brightness; j++) {
         Serial.print("J: "); Serial.print(j); Serial.println("");
-        if(j > 0) {
-          pixels.setBrightness(j);
+        for(int i = 0; i < numpixels; i++) {
+          if (modred[i] != 255 && modblue[i] != 255) {
+            Serial.println("Not bright enough");
+            modred[i] = modred[i] + 1;
+            modblue[i] = modblue[i] + 1;
+          } else if (modred[i] == 255){
+            modred[i] = modred[i] - 1;
+            
+          } else {
+            modblue[i] = modblue - 1;
+          }
+          pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
         }
-        delayMicroseconds(750);
+        delay(5);
         pixels.show();
       
       }
@@ -220,58 +279,30 @@ void modBright(int average) {
 
 }
 
-void shimmer() {
-  int shimoff = random(-20, 20);
-  delay(20);
-  for(int i =0; i < numpixels; i++) {
-     pixels.setPixelColor(i, red[i] + shimoff, green[i], blue[i] + shimoff);
-     pixels.show();
-  }
-}
 
-void fadeWithBrightness() {
-  for (int j=brightness_color; j>-1; j--) {
-    for(int i=0; i<numpixels;i++) {
-      if (state == true) {
-        pixels.setPixelColor(i, red[i], green[i], blue[i]); 
-        state = !state;
-      } else {
-         pixels.setPixelColor(i, 0, 0, 0);
-         state = !state;
-      }
-    }
-    pixels.setBrightness(j);
-    pixels.show();
-    delayMicroseconds(delayval);
-  }
-  
-}
 
-void fadeWithColor() {
-  for (int j=brightness_color; j>-1; j--) {
-    for(int i=0; i<numpixels;i++) {
-      if (state == true) {
-        pixels.setPixelColor(i, red[i], green[i], blue[i]); 
-        state = !state;
-      } else {
-        pixels.setPixelColor(i, 0, 0, 0);
-        state = !state;
-      }
-    }
-    pixels.setBrightness(j);
-    pixels.show();
-    delayMicroseconds(delayval);
-  }
-  
-}
 
 
 void setup() {
   int r = 0;
   for(; r < numpixels; r++) {
-    red[r] = random(10, 255);
+    red[r] = random(1, 10);
     green[r] = 0;
-    blue[r] = random(10, 255);
+    blue[r] = random(1, 10);
+    //blue[r] = 0;
+  }
+
+  r = 0;
+  for(; r < numpixels; r++) {
+    int q = random(0, 1);
+    ledstate[r] = q;
+  }
+
+  r = 0;
+  for(; r < numpixels; r++) {
+    modred[r] = 0;
+    modgreen[r] = 0;
+    modblue[r] = 0;
   }
 
   /*
@@ -281,10 +312,6 @@ void setup() {
   CircuitPlayground.begin(); //Make sure this is before the pixels.begin() call or the leds will not start properly.
   CircuitPlayground.setAccelRange(LIS3DH_RANGE_2_G);   // 2, 4, 8 or 16 G!
   pixels.begin();
-  for(int i =0; i < numpixels; i++) {
-    pixels.setPixelColor(i, red[i], green[i], blue[i]);
-   
-  }
   pixels.show();
 
 }
@@ -307,7 +334,6 @@ void loop() {
   }
 
   int average = (x + y + z) / 3;
-  //delayval = colorDelayRatio * average;
   
 
   /*
@@ -316,20 +342,25 @@ void loop() {
    * The higher the value, the more motion required in order to make the lights switch to pulse.
    */
   /*if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
+    fadeOut();
+    delay(100);
     twinkle_twinkle();
   } else {
-    pulse();    
+    turnOn();
+    if(average > 13) {
+      changeColor();
+    }
+    //fadeIn();
+    //delay(1000);
+    //modBright(average);
   }*/
-  if(average > 15) {
-    Serial.println("Triggered");
-    changeColor(); 
-  } else {
-    modBright(average);
-    //shimmer();
-  }
-
-  //fadeWithBrightness();
-  //fadewithColor();
+  //turnOn();
+  fadeIn();
+  delay(1000);
+  fadeOut();
+  //bool test = checkOff();
+  //modBright(average);
+  //Serial.print("Test bool: "); Serial.print(test);Serial.println("m/s^2");
 
   
 
@@ -344,7 +375,9 @@ void loop() {
   x_prev = x;
   y_prev = y;
   z_prev = z;
+  //avg_offset = average;
 
 
-  delay(20);
+  delay(1000);
 }
+
