@@ -22,12 +22,12 @@
 /*
  * Stores how much movement is required to switch motion.
  */
-#define offset 0.80
+#define offset 1.0
 
 /*
  * Number of pixels on the current String
  */
-#define numpixels 8
+#define numpixels 2
 
 /*
  * Data pin the pixels are connected to.
@@ -160,11 +160,11 @@ void fadeOut() {
       if (modblue[i] > 0) {
         modblue[i]--;
       }
-      Serial.print("modred: "); Serial.print(modred[i]); Serial.println("");
+      /*Serial.print("modred: "); Serial.print(modred[i]); Serial.println("");
       Serial.print("modblue: "); Serial.print(modblue[i]); Serial.println("");
       Serial.print("red: "); Serial.print(red[i]); Serial.println("");
       Serial.print("blue: "); Serial.print(blue[i]); Serial.println("");
-      delay(2000);
+      delay(2000);*/
       pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
     }
     pixels.show();
@@ -172,8 +172,8 @@ void fadeOut() {
     j++;
     off = checkOff();
   }
-  Serial.println("Leaving!");
-  delay(5000);
+  /*Serial.println("Leaving!");
+  delay(5000);*/
 }
 
 void fadeIn() {
@@ -341,26 +341,27 @@ void loop() {
    * The offset variable is at the top of the file and can be tweaked as needed.
    * The higher the value, the more motion required in order to make the lights switch to pulse.
    */
-  /*if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
-    fadeOut();
+  if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
+    bool on = checkOn();
+    if(on) {
+      fadeOut(); 
+    }
     delay(100);
     twinkle_twinkle();
   } else {
     turnOn();
-    if(average > 13) {
-      changeColor();
+    if(average > 9) {
+      Serial.println("Changing Color");
+      //changeColor();
     }
-    //fadeIn();
+    bool on = checkOn();
+    if (!on) {
+      fadeIn();
+    }
+    turnOn();
     //delay(1000);
     //modBright(average);
-  }*/
-  //turnOn();
-  fadeIn();
-  delay(1000);
-  fadeOut();
-  //bool test = checkOff();
-  //modBright(average);
-  //Serial.print("Test bool: "); Serial.print(test);Serial.println("m/s^2");
+  }
 
   
 
@@ -378,6 +379,6 @@ void loop() {
   //avg_offset = average;
 
 
-  delay(1000);
+  delay(5);
 }
 
