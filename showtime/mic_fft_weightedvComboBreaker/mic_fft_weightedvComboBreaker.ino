@@ -326,13 +326,13 @@ void loop() {
   }
  
   pixels.show();
-  delay(30);
+
+  if(++frameIdx >= FRAMES) frameIdx = 0;
+  }
+  delay(100);
   Serial.flush();
     x_prev = x;
     y_prev = y;
     z_prev = z;
     avg_offset = average;
-
-  if(++frameIdx >= FRAMES) frameIdx = 0;
-  }
 }
