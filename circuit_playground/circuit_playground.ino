@@ -27,7 +27,7 @@
 /*
  * Number of pixels on the current String
  */
-#define numpixels 2
+#define numpixels 3
 
 /*
  * Data pin the pixels are connected to.
@@ -76,7 +76,7 @@ int colorDelayRatio = 1000;
 
 int delayval;
 
-bool state;
+bool state = false;
 
 int color = 0;
 
@@ -117,7 +117,7 @@ bool checkOff() {
       Serial.print("blue: "); Serial.print(blue[i]); Serial.println("");
       delay(1000);*/
     if (modred[i] != 0 || modblue[i] != 0) {
-      Serial.println("False!");
+      //Serial.println("False!");
       return false; 
     }
   }
@@ -149,9 +149,9 @@ void turnOn() {
 
 void fadeOut() {
   int j = 0;
-  bool off = checkOff();
-  while(!off) {
-    Serial.print("off: "); Serial.print(off);Serial.println("");
+  bool offFade = checkOff();
+  while(!offFade) {
+    //Serial.print("off: "); Serial.print(offFade);Serial.println("");
     for(int i = 0; i < numpixels; i++) {
       if(modred[i] > 0) {
         modred[i]--;
@@ -168,9 +168,9 @@ void fadeOut() {
       pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
     }
     pixels.show();
-    delay(75);
+    delay(2);
     j++;
-    off = checkOff();
+    offFade = checkOff();
   }
   /*Serial.println("Leaving!");
   delay(5000);*/
@@ -178,8 +178,8 @@ void fadeOut() {
 
 void fadeIn() {
   int j = 0;
-  bool on = checkOn();
-  while(!on) {
+  bool onFade = checkOn();
+  while(!onFade) {
     //Serial.print("on: "); Serial.print(on);Serial.println("");
     for(int i = 0; i < numpixels; i++) {
       if(modred[i] < red[i]) {
@@ -197,9 +197,9 @@ void fadeIn() {
       pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
     }
     pixels.show();
-    delay(75);
+    delay(2);
     j++;
-    on = checkOn();
+    onFade = checkOn();
   }
 }
 
@@ -224,59 +224,62 @@ void changeColor() {
   pixels.show();
 }
 
+void dimPixels(int change) {
+  for(int r=0; r < change; r++) {
+    for(int i = 0; i < numpixels; i++) {
+      if (modred[i] != 0 && modblue[i] != 0) {
+        //Serial.println("Not Dim Enough");
+        modred[i] = modred[i] - 1;
+        modblue[i] = modblue - 1;
+      } else if(modred[i] == 0) {
+        modred[i] = modred[i] + 1;
+      } else {
+        modblue[i] = modblue + 1;
+      }
+      pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);    
+    }
+   pixels.show();
+   
+  }
+}
+
+void brightenPixels(int change) {
+  for(int r=0; r < change; r++) {
+    for(int i = 0; i < numpixels; i++) {
+      //Serial.println("Not bright enough");
+      if (modred[i] != 255 && modblue[i] != 255) {
+        modred[i] = modred[i] + 1;
+        modblue[i] = modblue[i] + 1;
+      } else if (modred[i] == 255){
+        modred[i] = modred[i] - 1;           
+      } else {
+        modblue[i] = modblue[i] - 1;
+      }
+      pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
+    }
+    //delay(2);
+    pixels.show();
+  }
+}
+
 void modBright(int average) {
   uint8_t brightness = average * 5;
   int difference = brightness - storeBrightness;
-  Serial.print("Difference: "); Serial.print(difference); Serial.println("");
-  if (difference > 15 || difference < -15) {
+  //Serial.print("Difference: "); Serial.print(difference); Serial.println("");
+  if (difference > 5 || difference < -5) {
     if (difference < 0) {
-      Serial.println("Negative!");
-      for (int j=storeBrightness; j > brightness; j--) {
-        Serial.print("J: "); Serial.print(j); Serial.println("");
-        for(int i = 0; i < numpixels; i++) {
-          if (modred[i] != 0 && modblue[i] != 0) {
-            Serial.println("Not Dim Enough");
-            modred[i] = modred[i] - 1;
-            modblue[i] = modblue - 1;
-          } else if(modred[i] == 0) {
-            modred[i] = modred[i] + 1;
-          } else {
-            modblue[i] = modblue + 1;
-          }
-
-          pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
-        }
-        delay(5);
-        pixels.show();
-      
-      }
+      Serial.println("Dimming!");
+      dimPixels(difference);
     } else {
-      Serial.println("Positive!");
-      for (int j=storeBrightness; j<=brightness; j++) {
-        Serial.print("J: "); Serial.print(j); Serial.println("");
-        for(int i = 0; i < numpixels; i++) {
-          if (modred[i] != 255 && modblue[i] != 255) {
-            Serial.println("Not bright enough");
-            modred[i] = modred[i] + 1;
-            modblue[i] = modblue[i] + 1;
-          } else if (modred[i] == 255){
-            modred[i] = modred[i] - 1;
-            
-          } else {
-            modblue[i] = modblue - 1;
-          }
-          pixels.setPixelColor(i, modred[i], modgreen[i], modblue[i]);
-        }
-        delay(5);
-        pixels.show();
-      
-      }
+      Serial.println("Dimming");
+      brightenPixels(difference);
     }
   }
-  
   storeBrightness = brightness;
-  Serial.print("Brightness: "); Serial.print(storeBrightness); Serial.println("");
+}
 
+void resetColor() {
+  
 }
 
 
@@ -286,9 +289,9 @@ void modBright(int average) {
 void setup() {
   int r = 0;
   for(; r < numpixels; r++) {
-    red[r] = random(1, 10);
+    red[r] = random(1, 30);
     green[r] = 0;
-    blue[r] = random(1, 10);
+    blue[r] = random(1, 30);
     //blue[r] = 0;
   }
 
@@ -341,27 +344,33 @@ void loop() {
    * The offset variable is at the top of the file and can be tweaked as needed.
    * The higher the value, the more motion required in order to make the lights switch to pulse.
    */
-  if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
-    bool on = checkOn();
-    if(on) {
-      fadeOut(); 
-    }
-    delay(100);
+  /*if( (((x - x_prev) <= offset) && ((y - y_prev) <=offset) && ((z - z_prev) <=offset))) {
+    state = false;
+    fadeOut(); 
+    delay(10);
     twinkle_twinkle();
   } else {
-    turnOn();
-    if(average > 9) {
-      Serial.println("Changing Color");
+    if (!state) {
+      fadeIn();
+      Serial.print("State: "); Serial.print(state);Serial.println("");
+      state = true;
+    }
+      if(average > 8) {
+      //Serial.println("Changing Color");
       //changeColor();
     }
-    bool on = checkOn();
-    if (!on) {
-      fadeIn();
-    }
-    turnOn();
-    //delay(1000);
-    //modBright(average);
-  }
+    Serial.println("Test!");
+    modBright(average);
+    
+    
+    
+  }*/
+  modBright(average);
+  //turnOn();
+  //Serial.print("Average: "); Serial.print(average);Serial.println("");
+  
+  
+
 
   
 
@@ -379,6 +388,6 @@ void loop() {
   //avg_offset = average;
 
 
-  delay(5);
+  delay(200);
 }
 
