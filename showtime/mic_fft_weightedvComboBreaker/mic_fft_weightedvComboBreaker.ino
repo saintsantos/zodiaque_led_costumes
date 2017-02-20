@@ -29,6 +29,7 @@
 // audio history, and on a per-bin basis (some may be more active than
 // others, so this keeps one or two "loud" bins from spoiling the rest.
 
+#define NUMPIXELS
 #define BINS   10          // FFT output is filtered down to this many bins
 #define FRAMES 4           // This many FFT cycles are averaged for leveling
 uint8_t lvl[FRAMES][BINS], // Bin levels for the prior #FRAMES frames
@@ -121,7 +122,7 @@ const uint16_t PROGMEM
   binDiv[]   = { 147, 103, 103, 257, 257, 381, 444, 634, 822, 1142 };
 
 // makes code use pixel strip (num of pixels, pin number, other variable dont touch)
-  Adafruit_NeoPixel pixels = Adafruit_NeoPixel( 4, 6, NEO_GRB + NEO_KHZ800);
+  Adafruit_NeoPixel pixels = Adafruit_NeoPixel( NUMPIXELS, 6, NEO_GRB + NEO_KHZ800);
 
 /*
  * These variables store the previous values form the accelerometers, 
