@@ -130,7 +130,7 @@ const uint16_t PROGMEM
 float x_prev = 0;
 float y_prev = 0;
 float z_prev = 0;
-int avg_offset = 0;
+float avg_offset = 0;
 /*
  * Stores how much movement is required to switch motion.
  */
@@ -181,11 +181,16 @@ void loop() {
     z = z * (-1);
   }
 
-  int average = (x + y + z) / 3;
+  float average = (x + y + z) / 3;
+
+  float movement = avg_offset - average;
+  if (movement < 0) {
+    movement = movement * -1;
+  }
 
   //if not moving Twinkle
-  Serial.println(average);
-  if(average == 4){
+  Serial.println(movement);
+  if(movement < 0.30){
 
    int q = 0;
    int led_to_light_1 = random(0, (12 +1));
@@ -326,6 +331,7 @@ void loop() {
     x_prev = x;
     y_prev = y;
     z_prev = z;
+    avg_offset = average;
 
   if(++frameIdx >= FRAMES) frameIdx = 0;
   }
