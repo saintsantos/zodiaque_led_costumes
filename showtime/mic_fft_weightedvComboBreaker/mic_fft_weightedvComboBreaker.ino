@@ -29,7 +29,7 @@
 // audio history, and on a per-bin basis (some may be more active than
 // others, so this keeps one or two "loud" bins from spoiling the rest.
 
-#define NUMPIXELS
+#define NUMPIXELS 12
 #define BINS   10          // FFT output is filtered down to this many bins
 #define FRAMES 4           // This many FFT cycles are averaged for leveling
 uint8_t lvl[FRAMES][BINS], // Bin levels for the prior #FRAMES frames
