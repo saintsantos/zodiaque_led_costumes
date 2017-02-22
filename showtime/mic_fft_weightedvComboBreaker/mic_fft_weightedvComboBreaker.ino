@@ -84,9 +84,9 @@ noise[]    = { 4, 3, 3, 3, 2, 2, 2, 2,
                                                                                              bin5data, bin6data, bin7data, bin8data, bin9data
                                                                                            },
                                                                            // R,G,B values for color wheel covering 10 NeoPixels:
-                                                                           reds[]   = { 73, 129, 169, 97, 133, 185, 143, 213, 219, 189 },
-                                                                               greens[] = { 56, 108, 161, 51, 97, 156, 59, 117, 202, 208 },
-                                                                                   blues[]  = { 41, 91, 140, 24, 35, 107, 27, 0, 105, 156 },
+                                                                           reds[]   = { 73, 129, 169, 97, 133, 185, 143, 213, 219, 169 },
+                                                                               greens[] = { 56, 108, 161, 51, 97, 156, 59, 117, 202, 161 },
+                                                                                   blues[]  = { 41, 91, 140, 24, 35, 107, 27, 0, 105, 140 },
 gamma8[] = { // Gamma correction improves the appearance of midrange colors
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
