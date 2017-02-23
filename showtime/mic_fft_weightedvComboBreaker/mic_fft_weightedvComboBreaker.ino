@@ -84,9 +84,9 @@ noise[]    = { 4, 3, 3, 3, 2, 2, 2, 2,
                                                                                              bin5data, bin6data, bin7data, bin8data, bin9data
                                                                                            },
                                                                            // R,G,B values for color wheel covering 10 NeoPixels:
-                                                                           reds[]   = { 73, 129, 169, 97, 133, 185, 143, 213, 219, 169 },
-                                                                               greens[] = { 56, 108, 161, 51, 97, 156, 59, 117, 202, 161 },
-                                                                                   blues[]  = { 41, 91, 140, 24, 35, 107, 27, 0, 105, 140 },
+                                                                           reds[]   = { 73, 129, 169, 97, 133, 185, 191, 213, 219, 169 },
+                                                                               greens[] = { 56, 108, 161, 51, 97, 156, 185, 117, 202, 161 },
+                                                                                   blues[]  = { 41, 91, 140, 24, 35, 107, 190, 0, 105, 140 },
 gamma8[] = { // Gamma correction improves the appearance of midrange colors
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -145,6 +145,12 @@ float avg_offset = 0;
 #define brightness_white 255
 #define delay_white 150
 
+void killEmAll() {
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixels.setPixelColor(i, 0, 0, 0);
+  }
+}
+
 // SETUP FUNCTION - runs once ----------------------------------------------
 
 void setup() {
@@ -199,6 +205,7 @@ void loop() {
 
     int q = 0;
     int led_to_light_1 = random(0, (12 + 1));
+    //killEmAll();
 
     for (int i = 0; i < brightness_white; i++) {
       pixels.setPixelColor(led_to_light_1, i, i, i);
@@ -275,6 +282,32 @@ void loop() {
                  (avgHi[i] *  15 + maxLvl) /  16 :       // Fast rise
                  (avgHi[i] * 5500000 + maxLvl) / 5500001;        //  Slower decay
     }
+    // Second fixed-point scale then 'stretches' each bin based on
+      // dynamic min/max levels to 0-256 range:
+      level = 1 + ((sum <= avgLo[i]) ? 0 :
+                   256L * (sum - avgLo[i]) / (long)(avgHi[i] - avgLo[i]));
+      // Clip output and convert to color:
+     
+     
+          
+          avgLvl[i] = (avgLvl[i] * 10 + 0) / (11); //weighted lvl average fall
+          level = avgLvl[i];
+          uint8_t r = (pgm_read_byte(&reds[i])   * level) >> 8,
+                  g = (pgm_read_byte(&greens[i]) * level) >> 8,
+                  b = (pgm_read_byte(&blues[i])  * level) >> 8;
+          pixels.setPixelColor(i,
+                               pgm_read_byte(&gamma8[r]),
+                               pgm_read_byte(&gamma8[g]),
+                               pgm_read_byte(&gamma8[b]));
+
+          pixels.setPixelColor(i + 10,
+                               pgm_read_byte(&gamma8[r]),
+                               pgm_read_byte(&gamma8[g]),
+                               pgm_read_byte(&gamma8[b]));
+          pixels.show();
+        
+
+      
 
 
 
